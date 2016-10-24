@@ -172,6 +172,11 @@ Execution happens in parallel.
 
 The `--loop` mode is quite useful for things like maintenance or upgrades.
 
+Naturally, you can chain multiple commands with `--loop`, do inline shell script, etc.  For example:
+
+`ssh-to hadoop --loop "puppet agent --test; service nginx start; nc -vz localhost 80"`
+
+
 
 ## Author
 <a name="author"></a>
