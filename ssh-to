@@ -1,0 +1,603 @@
+#!/bin/bash
+#
+# This script is used to abstract SSHing into multiple machines so we
+# don't have to keep doing copy and paste jobs aginst the hardware list.
+#
+
+# Errors are fatal
+set -e 
+
+#
+# Let the only record separator be a newline
+#
+IFS="
+"
+
+function print_syntax() {
+	>&2 echo "! "
+	>&2 echo "! Syntax $0 [ --dump | --loop ] group [ host_number ] [ ssh_cmd ]"
+	>&2 echo "! "
+	>&2 echo "! --dump Dump the IP address of the target host. Useful in automation."
+	>&2 echo "! --loop Loop through the target group and execute the same command on each host."
+	>&2 echo "! ssh_cmd Command(s) to be executed over the SSH connect."
+	>&2 echo "! "
+	exit 1
+} # End of print_syntax()
+
+ORIG=$@
+GROUP=""
+HOST_NUM=""
+DUMP=""
+LOOP=""
+
+#
+# Do a sanity check to make sure that jq is present.
+#
+JQ=$(which jq || true)
+if test ! "$JQ"
+then
+	echo "! "
+	echo "! jq does not seem to be installed on the system!"
+	echo "! "
+	echo "! You must install jq in order to use $0"
+	echo "! "
+	echo "! Depending on your OS, it may be one of the following commands:"
+	echo "! "
+	echo "! 	yum install jq"
+	echo "! 	apt-get install jq"
+	echo "! 	brew install jq"
+	echo "! "
+	echo "! jq can also be downloaded from: "
+	echo "! "
+	echo "! 	https://stedolan.github.io/jq/"
+	echo "! "
+	echo "! "
+	exit 1
+fi
+
+#
+# Possible locations for servers.json files
+#
+FILE0=./servers.json
+FILE1=$HOME/.ssh-to-servers.json
+FILE2=$(dirname $0)/servers.json
+
+#
+# Are we creating a sample servers.json file?
+# If so, do that and then exit.
+#
+if test "$1" == "--create"
+then
+
+	if test -f "$FILE0"
+	then
+		echo "! "
+		echo "! Error: File '$FILE0' already exists, cannot run --create!"
+		echo "! "
+		exit 1
+	fi
+
+	cat > $FILE0 << EOF
+{
+  "hadoop": [
+    ["hostname_or_ip", "human-readable name", "optional comment"],
+    ["hostname_or_ip2", "human-readable name", "optional comment"],
+    ["hostname_or_ip3", "human-readable name", "optional comment"]
+  ],
+  "zookeeper": [
+    ["hostname_or_ip", "human-readable name", "optional comment"],
+    ["hostname_or_ip2", "human-readable name", "optional comment"],
+    ["hostname_or_ip3", "human-readable name", "optional comment"]
+  ],
+  "splunk": [
+    ["hostname_or_ip", "human-readable name", "optional comment"],
+    ["hostname_or_ip2", "human-readable name", "optional comment"],
+    ["hostname_or_ip3", "human-readable name", "optional comment"]
+  ]
+}
+EOF
+	echo "# "
+	echo "# Sample server entries have been written to $FILE0"
+	echo "# "
+	echo "# Please edit that file before continuing."
+	echo "# "
+	echo "# You may also want to move that file to '$FILE1' to ssh-to can be run from any directory."
+	echo "# "
+	exit 0
+fi
+
+#
+# Logic to check for each file, and throw an error if we couldn't find either.
+#
+FILE=$FILE0
+if test ! -f "$FILE0"
+then
+	FILE=$FILE1
+	if test ! -f "$FILE1"
+	then
+		FILE=$FILE2
+		if test ! -f "$FILE2"
+		then
+			echo "! "
+			echo "! Unable to read from file '$FILE0, '$FILE1' *or* '$FILE2'"
+			echo "! "
+			echo "! If you'd like to create a sample json.servers file, please run: "
+			echo "! "
+			echo "! 	ssh-to --create "
+			echo "! "
+			exit 1
+		fi
+	fi
+fi
+
+
+#
+# Do we want to edit the servers.json file?
+#
+if test "$1" == "--edit"
+then
+	#
+	# Create a temp file and edit it
+	#
+	TMP=$(mktemp)
+	cp $FILE $TMP
+	if test ! "$EDITOR"
+	then
+		EDITOR=vim
+	fi
+
+	#
+	# Go through a loop where we edit our JSON file, check the results with jq,
+	# and stay in the loop if there's an error.
+	# 
+	while true
+	do
+
+		$EDITOR $TMP
+		RESULT=$?
+		if test $RESULT -ne 0
+		then
+			echo "! "
+			echo "! Editor '$EDITOR' exited with status '$RESULT', stopping."
+			echo "! "
+			rm -f $TMP
+			exit 1
+		fi
+
+		set +e
+		cat $TMP | jq . >/dev/null 2>&1
+		RESULT=$?
+		set -e
+		if test $RESULT -eq 0
+		then
+			break
+		fi
+
+		echo "! "
+		echo "! Sorry, but there was a JSON parsing error:"
+		echo "! "
+		echo -n "!	"
+		cat $TMP | jq . >/dev/null || true
+		echo "! "
+		echo "! Press ENTER to continue, or ctrl-C to exit. "
+		echo "! "
+		read
+
+	done
+	
+	echo "# "
+	echo "# Updated server list has been written to $FILE"
+	echo "# "
+	echo "# You may now run $0 normally."
+	echo "# "
+
+	exit 0
+fi
+
+#
+# First pass through our arguments, to detrmine if we are dumping or looping.
+#
+I=1
+while true
+do
+	eval ARG=\$$I
+	if test ! "$ARG"
+	then
+		break
+	fi
+
+	if test "$ARG" == "--dump"
+	then
+		DUMP=1
+
+	elif test "$ARG" == "--loop"
+	then
+		LOOP=1
+
+	fi
+
+	I=$((I + 1))
+done
+
+#
+# Debugging output
+#
+if test "$DEBUG"
+then
+	>&2 echo "orig=$ORIG"
+	>&2 echo "dump=$DUMP"
+	>&2 echo "loop=$LOOP"
+	>&2 echo "all=$ORIG,$DUMP,$LOOP"
+fi
+
+#
+# Now that we have our desired state, parse the remaining arguments.
+#
+while true
+do
+	if test "$1" == "-h" -o "$1" == "--help"
+	then
+		print_syntax
+
+	elif test "$1" == "--dump"
+	then
+		# Ignore this, since we already parsed it.
+		shift
+
+	elif test "$1" == "--loop"
+	then
+		# Ignore this, since we already parsed it.
+		shift
+
+	elif test ! "$1" 
+	then
+		#
+		# End of our arguments
+		#
+		break
+
+	else
+		#
+		# This could be a group, a host number, or a command
+		#
+		if test ! "$GROUP"
+		then
+			#
+			# We don't have a group? That's what this is, then.
+			#
+			GROUP=$1
+			shift
+
+		elif test "$LOOP"
+		then
+			#
+			# If we are looping, then we don't want
+			# a host number, so instead treat this 
+			# as the command to run and stop.
+			#
+			break
+
+		elif test "$DUMP"
+		then
+			#
+			# If we are dumping, then the next argument
+			# is our host number.  Grab that and leave 
+			# the remainder as our eventual cmd.
+			#
+			HOST_NUM=$1
+			shift
+			break
+
+		elif test "$1"
+		then
+			#
+			# Not looping or dumping?  Next argument
+			# must be our host number, then.
+			#
+			HOST_NUM=$1
+			shift
+			break
+			
+		else
+			#
+			# We have nothing, so stop
+			#
+			break
+
+		fi
+
+	
+	fi
+
+done
+
+
+#
+# If we are debugging, print what we parsed and exit
+#
+if test "$DEBUG"
+then
+	>&2 echo "group=$GROUP"
+	>&2 echo "hostnum=$HOST_NUM"
+	>&2 echo "dump=$DUMP"
+	>&2 echo "loop=$LOOP"
+	>&2 echo "commands=$@"
+	>&2 echo "all2=$GROUP,$HOST_NUM,$DUMP,$LOOP,$@"
+	>&2 echo
+	exit 1
+fi
+
+
+#
+#  Sanity check our JSON
+#
+cat $FILE | jq . >/dev/null
+
+
+#
+# Load a specific group of hosts
+#
+function load_group() {
+
+	INDEX=0
+	HOSTS=()
+	for LINE in $(cat $FILE | jq -r .\"${GROUP}\"[][0])
+	do
+		INDEX=$((INDEX += 1))
+		HOSTS[$INDEX]=$LINE
+	done
+
+	if test ${#HOSTS[@]} -eq 0
+	then
+		>&2 echo "! "
+		>&2 echo "! Invalid group (${GROUP}) specified!"
+		>&2 echo "! "
+		>&2 echo "! Please doublecheck your group and try again"
+		>&2 echo "! "
+		exit 1
+	fi
+
+	INDEX=0
+	HOSTNAMES=()
+	for LINE in $(cat $FILE | jq -r .\"${GROUP}\"[][1])
+	do
+		if test "$LINE" == "null"
+		then
+			LINE=""
+		fi
+
+		INDEX=$((INDEX += 1))
+		HOSTNAMES[$INDEX]=$LINE
+		
+	done
+
+	INDEX=0
+	DESCS=()
+	for LINE in $(cat $FILE | jq .\"${GROUP}\"[][2])
+	do
+		#
+		# The reason we didn't use jq -r is because an
+		# empty description won't be looped on, which
+		# means the output would be corrupted.
+		#
+		LINE=$(echo $LINE | sed -e "s/^\"//" -e "s/\"$//")
+
+		if test "$LINE" == "null"
+		then
+			LINE=""
+		fi
+
+		INDEX=$((INDEX += 1))
+		DESCS[$INDEX]=$LINE
+		
+	done
+
+	#>&2 echo "HOSTS: ${HOSTS[@]}" # Debugging
+	#>&2 echo "HOSTNAMES: ${HOSTNAMES[@]}" # Debugging
+	#>&2 echo "DESCS: ${DESCS[@]}" # Debugging
+
+} # End of load_group()
+
+
+
+#
+# No group specified?  Print out the available groups and exit.
+#
+if test "$GROUP" == "" 
+then
+	>&2 echo "# "
+	>&2 echo "# Please re-run me with a group name to see a list of servers in that group."
+	>&2 echo "# "
+	>&2 echo "# Available group names:"
+	>&2 echo "# "
+
+	for LINE in $(cat $FILE | jq -r keys[])
+	do
+		>&2 echo  "#	$LINE"
+	done
+
+	>&2 echo "# "
+
+	print_syntax
+
+fi
+
+
+#
+# No host specified? Print out available hosts in this group and exit.
+#
+if test ! "$HOST_NUM" -a "$LOOP" == ""
+then
+
+	load_group
+
+	if test ! "$DUMP"
+	then
+		>&2 echo "# "
+		>&2 echo "# Please re-run me with an index number of which server to SSH into."
+		>&2 echo "# "
+		>&2 echo "# Available hosts in group '${GROUP}': "
+		>&2 echo "# "
+
+		for I in $(seq 1 ${#HOSTS[@]}) 
+		do
+			HOST=${HOSTS[$I]}
+			HOSTNAME=${HOSTNAMES[$I]}
+			DESC=${DESCS[$I]}
+			if test "$DESC"
+			then
+				DESC=" - ${DESC}"
+			fi
+
+			HOST_SHORT=$(echo $HOST | cut -c-25 )
+			printf "# %d) %25s %s %s\n" $I $HOST_SHORT $HOSTNAME $DESC
+
+		done
+
+		>&2 echo "# "
+		>&2 echo "# Example: $0 $GROUP 1"
+		>&2 echo "# "
+
+		exit 1
+
+	else
+		#
+		# --dump was specified, so print out all host IPs and exit
+		#
+		for I in $(seq 1 ${#HOSTS[@]}) 
+		do
+			HOST=${HOSTS[$I]}
+			echo $HOST
+		done
+
+		exit 0
+
+	fi
+
+fi
+
+
+#
+# We have a group and host specified, so let's SSH in!
+# 
+load_group
+
+function ssh_to() {
+
+	>&2 echo "# "
+	>&2 echo "# SSHing to $NAME..."
+	if test "$1"
+	then
+		>&2 echo "# "
+		>&2 echo "# Executing command: $@"
+		>&2 echo "# "
+	fi
+
+	if test ! "$SSH_QUIET"
+	then
+		>&2 echo "# "
+		>&2 echo "# Want to use this script in automation?  "
+		>&2 echo "# Use the dump parameter to spit out the IP:"
+		>&2 echo "# "
+		>&2 echo "#		$0 --dump ${GROUP} ${HOST_NUM}"
+		>&2 echo "# "
+		>&2 echo "# "
+		>&2 echo "# This can then be used in automation: "
+		>&2 echo "# "
+		>&2 echo "# 	ssh otherusername@\$($0 ${GROUP} ${HOST_NUM} dump)"
+		>&2 echo "# 	scp file \$($0 ${GROUP} ${HOST_NUM} dump):."
+		>&2 echo "# "
+		>&2 echo "# "
+	fi
+
+	#
+	# Rename our window in Tmux, if tmux exists
+	#
+	if test $(which tmux)
+	then
+		OLD_WINDOW_NAME=$(tmux display-message -p '#W' 2>/dev/null || true )
+		tmux rename-window "$HOSTNAME" 2> /dev/null || true
+	fi
+
+	ssh $HOST $@ || true
+
+	#
+	# Restore the old window name
+	#
+	if test $(which tmux)
+	then
+		tmux rename-window "$OLD_WINDOW_NAME" 2>/dev/null || true
+	fi
+
+} # End of ssh()
+
+
+if test ! "$LOOP"
+then
+
+	HOST=${HOSTS[$HOST_NUM]}
+	HOSTNAME=${HOSTNAMES[$HOST_NUM]}
+	DESC=${DESCS[$HOST_NUM]}
+
+	if test ! "$HOST"
+	then
+		>&2 echo "! "
+		>&2 echo "! Invalid host index specified: ${HOST_NUM}"
+		>&2 echo "! "
+		>&2 echo "! Please doublecheck your host number and try again"
+		>&2 echo "! "
+		exit 1
+	fi
+
+	NAME=$HOSTNAME
+	if test "$DESC"
+	then
+		NAME="${NAME} (${DESC})"
+	fi
+
+	if test "$DUMP"
+	then
+		echo $HOST
+		exit 
+	fi
+
+	ssh_to $@
+
+else
+	#
+	# We're in loop mode, so loop through our hosts
+	#
+	if test ! "$*"
+	then
+		>&2 echo "! "
+		>&2 echo "! You need to specify a command to run when looping!"
+		>&2 echo "! "
+		exit
+	fi
+
+	SSH_QUIET=1
+
+	>&2 echo "# "
+	>&2 echo "# Looping over group '$GROUP'..."
+	>&2 echo "# "
+
+	for HOST_NUM in $(seq 1 ${#HOSTS[@]})
+	do
+		HOST=${HOSTS[$HOST_NUM]}
+		HOSTNAME=${HOSTNAMES[$HOST_NUM]}
+		DESC=${DESCS[$HOST_NUM]}
+
+		NAME=$HOSTNAME
+		if test "$DESC"
+		then
+			NAME="${NAME} (${DESC})"
+		fi
+
+		ssh_to $@
+
+	done
+
+fi
+
+
+

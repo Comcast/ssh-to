@@ -1,0 +1,17 @@
+{
+  "hadoop": [
+    ["hostname_or_ip", "human-readable name", "optional comment"],
+    ["hostname_or_ip2", "human-readable name", "optional comment"],
+    ["hostname_or_ip3", "human-readable name", "optional comment"]
+  ],
+  "zookeeper": [
+    ["hostname_or_ip", "human-readable name", "optional comment"],
+    ["hostname_or_ip2", "human-readable name", "optional comment"],
+    ["hostname_or_ip3", "human-readable name", "optional comment"]
+  ],
+  "splunk": [
+    ["hostname_or_ip", "human-readable name", "optional comment"],
+    ["hostname_or_ip2", "human-readable name", "optional comment"],
+    ["hostname_or_ip3", "human-readable name", "optional comment"]
+  ]
+}

@@ -1,0 +1,123 @@
+#!/bin/bash
+#
+# Script to test our ssh-to script.
+#
+
+
+#
+# Run an assert
+#
+# @param $1 string Our condition which should be a string for the test command
+# @param $2 integer This should be $LINENO passed in from the parent, for error reporting.
+#
+function assert() {
+
+	COND1=$1
+	COND2=$2
+	LINE=$3
+
+	#
+	# Filter out newlines, otherwise 
+	#
+	#echo "COND: $COND1 = $COND2" # Debugging
+	if ! test "$COND1" = "$COND2"
+	then
+		echo "! "
+		echo "! Assertion Failed: $COND1 = $COND2"
+		echo "! File: $0, Line: $LINE"
+		echo "! "
+		#
+		# Remove our temp servers.json file
+		#
+		rm -f servers.json
+		exit 1
+
+	else 
+		echo "# Assertion PASS: $COND1 = $COND2"
+
+	fi
+
+} # End of assert()
+
+#
+# Path to our SSH-to command
+#
+CMD=$(dirname $0)/ssh-to
+
+#
+# Copy our sample in for working
+#
+cp $(dirname $0)/servers.json.example servers.json
+
+#
+# Turn on debugging
+#
+export DEBUG=1
+
+RESULT=$($CMD -h 2>&1 | grep "^all=")
+#echo "$RESULT"
+assert "$RESULT" "all=-h,," $LINENO
+
+RESULT=$($CMD 2>&1 | grep "^all2=")
+#echo "$RESULT"
+assert "$RESULT" "all2=,,,," $LINENO
+
+RESULT=$($CMD hadoop 2>&1 | grep "^all2=")
+#echo "$RESULT"
+assert "$RESULT" "all2=hadoop,,,," $LINENO
+
+RESULT=$($CMD hadoop 1 2>&1 | grep "^all2=")
+#echo "$RESULT"
+assert "$RESULT" "all2=hadoop,1,,," $LINENO
+
+RESULT=$($CMD hadoop 1 "test cmd" 2>&1 | grep "^all2=")
+#echo "$RESULT"
+assert "$RESULT" "all2=hadoop,1,,,test cmd" $LINENO
+
+RESULT=$($CMD --loop hadoop "test cmd" 2>&1 | grep "^all2=")
+#echo "$RESULT"
+assert "$RESULT" "all2=hadoop,,,1,test cmd" $LINENO
+
+RESULT=$($CMD hadoop --loop "test cmd" 2>&1 | grep "^all2=")
+#echo "$RESULT"
+assert "$RESULT" "all2=hadoop,,,1,test cmd" $LINENO
+
+RESULT=$($CMD --dump hadoop 1 "test cmd" 2>&1 | grep "^all2=")
+#echo "$RESULT"
+assert "$RESULT" "all2=hadoop,1,1,,test cmd" $LINENO
+
+RESULT=$($CMD hadoop 1 --dump "test cmd" 2>&1 | grep "^all2=")
+#echo "$RESULT"
+assert "$RESULT" "all2=hadoop,1,1,,--dump test cmd" $LINENO
+
+#
+# Test without a servers.json file
+#
+rm -f servers.json
+HOME=notahomedirectory ./$CMD >/dev/null
+RESULT=$?
+assert "$RESULT" 1 $LINENO
+
+#
+# Test creating a servers.json file
+#
+HOME=notahomedirectory ./$CMD --create >/dev/null
+RESULT=$?
+assert "$RESULT" 0 $LINENO
+test -f servers.json
+RESULT=$?
+assert "$RESULT" 0 $LINENO
+
+#
+# Don't let us create a file that already exists
+#
+HOME=notahomedirectory ./$CMD --create >/dev/null
+RESULT=$?
+assert "$RESULT" 1 $LINENO
+
+#
+# Remove the servers.json file
+# 
+rm -f servers.json
+
+
