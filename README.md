@@ -6,10 +6,11 @@ copy and paste jobs from the hardware list into an SSH command every time you wa
 The solution: This script.  It lets you store hostnames/IPs in a JSON file which this script accesses.
 
 
-- <a href="#requirements>Requirements</a>
+- <a href="#requirements">Requirements</a>
 - <a href="#getting-started">Getting Started</a>
 - <a href="#usage">Usage</a>
 - <a href="#automation">Usage in Automated Environments</a>
+- <a href="#looping">Looping through many hosts</a>
 - <a href="#tmux">Tmux Support</a>
 - <a href="#author">Author</a>
 
@@ -107,7 +108,7 @@ That was easy! :-)
 ## Usage in Automated Environments
 <a name="automation"></a>
 
-Want to use this script in an automated environment?  No problem, just use the optional "--dump" parameter:
+Want to use this script in an automated environment?  No problem, just use the optional `--dump` parameter:
 
 ```
 $ ssh-to hadoop 1 --dump
@@ -129,6 +130,47 @@ When a SSH connection is launched, the current window you are in will be renamed
 name of the target host.  When you disconnect, the name will change back to what it was before.
 
 This is useful to help you keep track of when SSH sessions get disconnected.
+
+## Looping Through Many Hosts
+<a name="looping"></a>
+
+Now let's say you have a dozens (or even hundreds of hosts), and you want to execute a command on all of them.
+This can be done with the `--loop` parameter:
+
+```
+ssh-to hadoop --loop "hostname"
+# 
+# Looping over group 'hadoop'...
+# 
+# 
+# SSHing to hadoop01.sys.comcast.net...
+# 
+# Executing command: hostname
+# 
+hadoop01.sys.comcast.net
+# 
+# SSHing to hadoop02.sys.comcast.net...
+# 
+# Executing command: hostname
+# 
+hadoop02.sys.comcast.net
+# 
+# SSHing to hadoop03.sys.comcast.net...
+# 
+# Executing command: hostname
+# 
+hadoop03.sys.comcast.net
+# 
+# SSHing to hadoop04.sys.comcast.net...
+# 
+# Executing command: hostname
+# 
+hadoop04.sys.comcast.net
+```
+
+Execution happens in parallel.
+
+The `--loop` mode is quite useful for things like maintenance or upgrades.
 
 
 ## Author
