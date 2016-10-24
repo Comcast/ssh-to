@@ -3,7 +3,7 @@
 The problem: you have dozens of servers that you manage, and you're tired of doing
 copy and paste jobs from the hardware list into an SSH command every time you want to connect.
 
-The solution: This script.  It prodvides address book-liek funcitonality which lets you store hostnames/IPs in a JSON file which this script accesses.
+The solution: This script.  It prodvides address book-like funcitonality which lets you store hostnames/IPs in a JSON file which this script accesses.
 
 
 - <a href="#requirements">Requirements</a>
