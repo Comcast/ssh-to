@@ -21,6 +21,10 @@ function print_syntax() {
 	>&2 echo "! --loop Loop through the target group and execute the same command on each host."
 	>&2 echo "! ssh_cmd Command(s) to be executed over the SSH connect."
 	>&2 echo "! "
+	>&2 echo "! "
+	>&2 echo "! To view more info or file a bug, please visit the project GitHub: "
+	>&2 echo "!		https://github.com/Comcast/ssh-to"
+	>&2 echo "! "
 	exit 1
 } # End of print_syntax()
 
@@ -124,6 +128,11 @@ then
 			echo "! If you'd like to create a sample json.servers file, please run: "
 			echo "! "
 			echo "! 	ssh-to --create "
+			echo "! "
+			echo "! "
+			echo "! To view more info or file a bug, please visit the project GitHub: "
+			echo "!		https://github.com/Comcast/ssh-to"
+			echo "! "
 			echo "! "
 			exit 1
 		fi
