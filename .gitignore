@@ -2,3 +2,6 @@
 # Vim leftovers
 *~
 
+# Don't accidentally check in servers.json
+servers.json
+
