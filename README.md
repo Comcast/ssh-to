@@ -18,7 +18,7 @@ The solution: This script.  It lets you store hostnames/IPs in a JSON file which
 <a name="requirements"></a>
 
 You must have <a href="https://stedolan.github.io/jq/">jq</a> installed on your system so that
-the list of servers can be parsed.
+the list of servers can be parsed.  If jq is not found, ssh-to will complain and exit.
 
 
 ## Getting Started
