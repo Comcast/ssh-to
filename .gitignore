@@ -1,6 +1,7 @@
 
 # Vim leftovers
 *~
+*.swp
 
 # Don't accidentally check in servers.json
 servers.json
