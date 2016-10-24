@@ -94,14 +94,14 @@ assert "$RESULT" "all2=hadoop,1,1,,--dump test cmd" $LINENO
 # Test without a servers.json file
 #
 rm -f servers.json
-HOME=notahomedirectory ./$CMD >/dev/null
+HOME=notahomedirectory ./$CMD >/dev/null 2>&1
 RESULT=$?
 assert "$RESULT" 1 $LINENO
 
 #
 # Test creating a servers.json file
 #
-HOME=notahomedirectory ./$CMD --create >/dev/null
+HOME=notahomedirectory ./$CMD --create >/dev/null 2>&1
 RESULT=$?
 assert "$RESULT" 0 $LINENO
 test -f servers.json
@@ -111,7 +111,7 @@ assert "$RESULT" 0 $LINENO
 #
 # Don't let us create a file that already exists
 #
-HOME=notahomedirectory ./$CMD --create >/dev/null
+HOME=notahomedirectory ./$CMD --create >/dev/null 2>&1
 RESULT=$?
 assert "$RESULT" 1 $LINENO
 
