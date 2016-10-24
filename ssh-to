@@ -194,6 +194,11 @@ then
 
 	done
 	
+	#
+	# Deploy our changes
+	#
+	mv $TMP $FILE
+
 	echo "# "
 	echo "# Updated server list has been written to $FILE"
 	echo "# "
