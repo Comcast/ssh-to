@@ -10,7 +10,7 @@ The solution: This script.  It lets you store hostnames/IPs in a JSON file which
 - <a href="#getting-started">Getting Started</a>
 - <a href="#usage">Usage</a>
 - <a href="#automation">Usage in Automated Environments</a>
-- <a href="#looping">Looping through many hosts</a>
+- <a href="#looping">Looping Through Many Hosts</a>
 - <a href="#tmux">Tmux Support</a>
 - <a href="#author">Author</a>
 
@@ -134,7 +134,7 @@ This is useful to help you keep track of when SSH sessions get disconnected.
 ## Looping Through Many Hosts
 <a name="looping"></a>
 
-Now let's say you have a dozens (or even hundreds of hosts), and you want to execute a command on all of them.
+Now let's say you have dozens (or even hundreds) of hosts, and you want to execute a command on all of them.
 This can be done with the `--loop` parameter:
 
 ```
