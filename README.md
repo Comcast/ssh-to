@@ -107,16 +107,16 @@ That was easy! :-)
 ## Usage in Automated Environments
 <a name="automation"></a>
 
-Want to use this script in an automated environment?  No problem, just use the optional "dump" parameter:
+Want to use this script in an automated environment?  No problem, just use the optional "--dump" parameter:
 
 ```
-$ ssh-to hadoop 1 dump
+$ ssh-to hadoop 1 --dump
 10.100.200.1
 ```
 
 This can be used within other commands as follows:
-- `ssh otherusername@$(ssh-to hadoop 1 dump)`
-- `scp file $(ssh-to hadoop 1 dump):.`
+- `ssh otherusername@$(ssh-to hadoop 1 --dump)`
+- `scp file $(ssh-to hadoop 1 --dump):.`
 - etc.
 
 
