@@ -1,9 +1,8 @@
 # ssh-to
 
-The problem: you have dozens of servers that you manage, and you're tired of doing
-copy and paste jobs from the hardware list into an SSH command every time you want to connect.
+Hey engineers! Do you manage servers?  Lots of servers?  Hate copying and pasting IP addresses?  Need a way to execute a command on each of a group of servers that you manage?
 
-The solution: This script.  It lets you easily manage dozens (or even hundreds) of servers programatically.
+This script can help with those things.
 
 
 - <a href="#requirements">Requirements</a>
