@@ -76,7 +76,7 @@ the user will be prompted to pick one in the next invocation.
 
 Example:
 ```
-$ ssh-to hadop
+$ ssh-to hadoop
 # 
 # Please re-run me with an index number of which server to SSH into.
 # 
