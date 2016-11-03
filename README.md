@@ -167,7 +167,7 @@ hadoop03.sys.comcast.net
 hadoop04.sys.comcast.net
 ```
 
-Execution happens in serial.
+Execution happens serially.
 
 The `--loop` mode is quite useful for things like maintenance or upgrades.
 
