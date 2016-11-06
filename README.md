@@ -188,7 +188,7 @@ Or lets say you want to do rolling upgrades of your Splunk platform:
 
 `ssh-to splunk --loop "yum install -y splunk; /opt/splunk/bin/splunk stop; /opt/splunk/bin/splunk start --answer-yes --no-prompt"`
 
-That's literally all there is to it!  And I've literally (not figureatively) done this in production.
+That's literally all there is to it!  And I've literally (not figuratively) done this in production.
 
 
 ## Author
