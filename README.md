@@ -114,10 +114,18 @@ $ ssh-to hadoop 1 --dump
 10.100.200.1
 ```
 
-This can be used within other commands as follows:
+This can be used within other commands like so:
 - `ssh otherusername@$(ssh-to hadoop 1 --dump)`
 - `scp file $(ssh-to hadoop 1 --dump):.`
 - etc.
+
+It can also be used in shell scripting as in the following example
+```
+for HOST in $(ssh-to --dump hadoop)
+do
+   scp file.txt ${HOST}:/path/to/destination/
+done
+```
 
 
 ## Tmux Support
@@ -175,6 +183,11 @@ Naturally, you can chain multiple commands with `--loop`, do inline shell script
 
 `ssh-to hadoop --loop "puppet agent --test; service nginx start; nc -vz localhost 80"`
 
+
+Or lets say you want to do rolling upgrades of your Splunk platform:
+`ssh-to splunk --loop "yum install -y splunk; /opt/splunk/bin/splunk stop; /opt/splunk/bin/splunk start --answer-yes --no-prompt"`
+
+That's literally all there is to it.  And I've literally done this in production.
 
 
 ## Author
