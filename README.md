@@ -1,6 +1,6 @@
 # ssh-to
 
-Hey engineers! Do you manage servers?  Lots of servers?  Hate copying and pasting IP addresses?  Need a way to execute a command on each of a group of servers that you manage?
+Hey software engineers! Do you manage servers?  Lots of servers?  Hate copying and pasting IP addresses?  Need a way to execute a command on each of a group of servers that you manage?
 
 This script can help with those things.
 
