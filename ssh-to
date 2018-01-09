@@ -3,6 +3,10 @@
 # This script is used to abstract SSHing into multiple machines so we
 # don't have to keep doing copy and paste jobs aginst the hardware list.
 #
+# Environment variables we care about:
+#
+# DEBUG - Turns out debug output
+#
 
 # Errors are fatal
 set -e 
