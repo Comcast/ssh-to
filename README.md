@@ -127,6 +127,18 @@ do
 done
 ```
 
+### Passing Options to SSH
+
+If your SSH key isn't on the remote server, you're using prompted for a password.
+This can be a problem in automated environments.  Instead, try using the $SSH_OPTS 
+environment variable. That will let you pass options into the SSH command line.
+
+Example:
+
+`SSH_OPTS=-oBatchMode=yes ssh-to hadoop --loop hostname`
+
+This will print hostnames of hosts in the `hadoop` group that you can SSH into.
+
 
 ## Tmux Support
 <a name="tmux"></a>
