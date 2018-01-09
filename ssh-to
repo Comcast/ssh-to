@@ -5,7 +5,9 @@
 #
 # Environment variables we care about:
 #
-# DEBUG - Turns out debug output
+# DEBUG - Prints debug output and doesn't actually run any commands.
+# SSH_OPTS - options to pass into SSH.  
+#	A good one is "-oBatchMode=yes" so that passwords aren't prompted for, which is useful in automation.
 #
 
 # Errors are fatal
@@ -538,7 +540,7 @@ function ssh_to() {
 		tmux rename-window "$HOSTNAME" 2> /dev/null || true
 	fi
 
-	ssh $HOST $@ || true
+	ssh $SSH_OPTS $HOST $@ || true
 
 	#
 	# Restore the old window name
