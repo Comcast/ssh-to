@@ -1,15 +1,15 @@
 # ssh-to
 
-The problem: you have dozens of servers that you manage, and you're tired of doing
-copy and paste jobs from the hardware list into an SSH command every time you want to connect.
+Hey software engineers! Do you manage servers?  Lots of servers?  Hate copying and pasting IP addresses?  Need a way to execute a command on each of a group of servers that you manage?
 
-The solution: This script.  It lets you store hostnames/IPs in a JSON file which this script accesses.
+This app can help with those things.
 
 
-- <a href="#requirements>Requirements</a>
+- <a href="#requirements">Requirements</a>
 - <a href="#getting-started">Getting Started</a>
 - <a href="#usage">Usage</a>
 - <a href="#automation">Usage in Automated Environments</a>
+- <a href="#looping">Looping Through Many Hosts</a>
 - <a href="#tmux">Tmux Support</a>
 - <a href="#author">Author</a>
 
@@ -76,7 +76,7 @@ the user will be prompted to pick one in the next invocation.
 
 Example:
 ```
-$ ssh-to hadop
+$ ssh-to hadoop
 # 
 # Please re-run me with an index number of which server to SSH into.
 # 
@@ -107,17 +107,25 @@ That was easy! :-)
 ## Usage in Automated Environments
 <a name="automation"></a>
 
-Want to use this script in an automated environment?  No problem, just use the optional "--dump" parameter:
+Want to use this script in an automated environment?  No problem, just use the optional `--dump` parameter:
 
 ```
 $ ssh-to hadoop 1 --dump
 10.100.200.1
 ```
 
-This can be used within other commands as follows:
+This can be used within other commands like so:
 - `ssh otherusername@$(ssh-to hadoop 1 --dump)`
 - `scp file $(ssh-to hadoop 1 --dump):.`
 - etc.
+
+It can also be used in shell scripting as in the following example
+```
+for HOST in $(ssh-to --dump hadoop)
+do
+   scp file.txt ${HOST}:/path/to/destination/
+done
+```
 
 
 ## Tmux Support
@@ -129,6 +137,58 @@ When a SSH connection is launched, the current window you are in will be renamed
 name of the target host.  When you disconnect, the name will change back to what it was before.
 
 This is useful to help you keep track of when SSH sessions get disconnected.
+
+## Looping Through Many Hosts
+<a name="looping"></a>
+
+Now let's say you have dozens (or even hundreds) of hosts, and you want to execute a command on all of them.
+This can be done with the `--loop` parameter:
+
+```
+ssh-to hadoop --loop "hostname"
+# 
+# Looping over group 'hadoop'...
+# 
+# 
+# SSHing to hadoop01.sys.comcast.net...
+# 
+# Executing command: hostname
+# 
+hadoop01.sys.comcast.net
+# 
+# SSHing to hadoop02.sys.comcast.net...
+# 
+# Executing command: hostname
+# 
+hadoop02.sys.comcast.net
+# 
+# SSHing to hadoop03.sys.comcast.net...
+# 
+# Executing command: hostname
+# 
+hadoop03.sys.comcast.net
+# 
+# SSHing to hadoop04.sys.comcast.net...
+# 
+# Executing command: hostname
+# 
+hadoop04.sys.comcast.net
+```
+
+Execution happens serially.
+
+The `--loop` mode is quite useful for things like maintenance or upgrades.
+
+Naturally, you can chain multiple commands with `--loop`, do inline shell script, etc.  For example:
+
+`ssh-to hadoop --loop "puppet agent --test; service nginx start; nc -vz localhost 80"`
+
+
+Or lets say you want to do rolling upgrades of your Splunk platform:
+
+`ssh-to splunk --loop "yum install -y splunk; /opt/splunk/bin/splunk stop; /opt/splunk/bin/splunk start --answer-yes --no-prompt"`
+
+That's literally all there is to it!  And I've literally (not figuratively) done this in production.
 
 
 ## Author
