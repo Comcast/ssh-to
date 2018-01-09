@@ -335,8 +335,9 @@ then
 	>&2 echo "hostnum=$HOST_NUM"
 	>&2 echo "dump=$DUMP"
 	>&2 echo "loop=$LOOP"
+	>&2 echo "file=$FILE"
 	>&2 echo "commands=$@"
-	>&2 echo "all2=$GROUP,$HOST_NUM,$DUMP,$LOOP,$@"
+	>&2 echo "all2=$GROUP,$HOST_NUM,$DUMP,$LOOP,$FILE,$@"
 	>&2 echo
 	exit 1
 fi
