@@ -2,27 +2,53 @@
 
 Hey software engineers! Do you manage servers?  Lots of servers?  Hate copying and pasting IP addresses?  Need a way to execute a command on each of a group of servers that you manage?
 
-This app can help with those things.
+## TL;DR
 
+Turn this:
+```
+$ ssh hadop01.sys.comcast.net ^C
+# Oops, I made a typo!
+```
 
-- <a href="#requirements">Requirements</a>
-- <a href="#getting-started">Getting Started</a>
-- <a href="#usage">Usage</a>
-- <a href="#automation">Usage in Automated Environments</a>
-- <a href="#looping">Looping Through Many Hosts</a>
-- <a href="#tmux">Tmux Support</a>
-- <a href="#author">Author</a>
+Into this:
+```
+$ ssh-to hadoop 2
+# 
+# SSHing to 10.100.200.2 (hadoop01.sys.comcast.net)...
+# 
+Last login: Wed Mar  9 17:00:23 2016 from 10.36.122.137
+[dmuth200@hadoop01.sys.comcast.net ~]$ 
+```
+
+Or turn this:
+
+```
+$ for I in $(seq -w 1 20) do; ssh hadoop{$I}.sys.comcast.net "COMMAND"; done
+# Reasonable, but requires a lot of typing and manual commands
+```
+
+Into this:
+
+```
+$ ssh-to hadoop --loop "COMMAND"
+# 
+# Looping over group 'hadoop'...
+# 
+# 
+# SSHing to hadoop01.sys.comcast.net...
+# 
+
+# All hosts in this group will be SSHed to and have the above command executed.
+```
 
 
 ## Requirements
-<a name="requirements"></a>
 
 You must have <a href="https://stedolan.github.io/jq/">jq</a> installed on your system so that
 the list of servers can be parsed.  If jq is not found, ssh-to will complain and exit.
 
 
 ## Getting Started
-<a name="getting-started"></a>
 
 In order to use this script, you'll need to create a servers.json file:
 
@@ -43,7 +69,6 @@ An exmample `servers.json` file <a href="servers.json.example">can be found here
 
 
 ## Usage
-<a name="usage"></a>
 
 Syntax: `ssh-to [ --dump | --loop ] group [ host_number ] [ ssh_args ]`
 
@@ -105,7 +130,6 @@ That was easy! :-)
 
 
 ## Usage in Automated Environments
-<a name="automation"></a>
 
 Want to use this script in an automated environment?  No problem, just use the optional `--dump` parameter:
 
@@ -141,7 +165,6 @@ This will print hostnames of hosts in the `hadoop` group that you can SSH into.
 
 
 ## Tmux Support
-<a name="tmux"></a>
 
 Yes, we have Tmux support. (how cool is that!?)
 
@@ -150,8 +173,8 @@ name of the target host.  When you disconnect, the name will change back to what
 
 This is useful to help you keep track of when SSH sessions get disconnected.
 
+
 ## Looping Through Many Hosts
-<a name="looping"></a>
 
 Now let's say you have dozens (or even hundreds) of hosts, and you want to execute a command on all of them.
 This can be done with the `--loop` parameter:
