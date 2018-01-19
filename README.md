@@ -6,7 +6,7 @@ Hey software engineers! Do you manage servers?  Lots of servers?  Hate copying a
 
 Turn this:
 ```
-$ ssh hadop01.sys.comcast.net ^C
+$ ssh hadop02.sys.comcast.net ^C
 # Oops, I made a typo!
 ```
 
@@ -14,10 +14,10 @@ Into this:
 ```
 $ ssh-to hadoop 2
 # 
-# SSHing to 10.100.200.2 (hadoop01.sys.comcast.net)...
+# SSHing to 10.100.200.2 (hadoop02.sys.comcast.net)...
 # 
 Last login: Wed Mar  9 17:00:23 2016 from 10.36.122.137
-[dmuth200@hadoop01.sys.comcast.net ~]$ 
+[dmuth200@hadoop02.sys.comcast.net ~]$ 
 ```
 
 Or turn this:
