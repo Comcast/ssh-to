@@ -2,6 +2,15 @@
 
 Hey software engineers! Do you manage servers?  Lots of servers?  Hate copying and pasting IP addresses?  Need a way to execute a command on each of a group of servers that you manage?
 
+
+## Installation
+
+```
+brew tap comcast/opensource git@github.com:Comcast/homebrew-opensource.git
+brew install ssh-ti
+``
+
+
 ## TL;DR
 
 Turn this:
