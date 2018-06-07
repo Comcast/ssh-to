@@ -7,7 +7,7 @@ Hey software engineers! Do you manage servers?  Lots of servers?  Hate copying a
 
 ```
 brew tap comcast/opensource git@github.com:Comcast/homebrew-opensource.git
-brew install ssh-ti
+brew install ssh-to
 ```
 
 
