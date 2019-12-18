@@ -79,7 +79,7 @@ FILE2=$(dirname $0)/servers.json
 if test "$1" == "--create"
 then
 
-	if test -f "$FILE0"
+	if test -e "$FILE0"
 	then
 		>&2 echo "! "
 		>&2 echo "! Error: File '$FILE0' already exists, cannot run --create!"
