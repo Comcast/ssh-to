@@ -60,35 +60,35 @@ assert "$RESULT" "all=-h,," $LINENO
 
 RESULT=$($CMD 2>&1 | grep "^all2=")
 #echo "$RESULT"
-assert "$RESULT" "all2=,,,," $LINENO
+assert "$RESULT" "all2=,,,,./servers.json," $LINENO
 
 RESULT=$($CMD hadoop 2>&1 | grep "^all2=")
 #echo "$RESULT"
-assert "$RESULT" "all2=hadoop,,,," $LINENO
+assert "$RESULT" "all2=hadoop,,,,./servers.json," $LINENO
 
 RESULT=$($CMD hadoop 1 2>&1 | grep "^all2=")
 #echo "$RESULT"
-assert "$RESULT" "all2=hadoop,1,,," $LINENO
+assert "$RESULT" "all2=hadoop,1,,,./servers.json," $LINENO
 
 RESULT=$($CMD hadoop 1 "test cmd" 2>&1 | grep "^all2=")
 #echo "$RESULT"
-assert "$RESULT" "all2=hadoop,1,,,test cmd" $LINENO
+assert "$RESULT" "all2=hadoop,1,,,./servers.json,test cmd" $LINENO
 
 RESULT=$($CMD --loop hadoop "test cmd" 2>&1 | grep "^all2=")
 #echo "$RESULT"
-assert "$RESULT" "all2=hadoop,,,1,test cmd" $LINENO
+assert "$RESULT" "all2=hadoop,,,1,./servers.json,test cmd" $LINENO
 
 RESULT=$($CMD hadoop --loop "test cmd" 2>&1 | grep "^all2=")
 #echo "$RESULT"
-assert "$RESULT" "all2=hadoop,,,1,test cmd" $LINENO
+assert "$RESULT" "all2=hadoop,,,1,./servers.json,test cmd" $LINENO
 
 RESULT=$($CMD --dump hadoop 1 "test cmd" 2>&1 | grep "^all2=")
 #echo "$RESULT"
-assert "$RESULT" "all2=hadoop,1,1,,test cmd" $LINENO
+assert "$RESULT" "all2=hadoop,1,1,,./servers.json,test cmd" $LINENO
 
 RESULT=$($CMD hadoop 1 --dump "test cmd" 2>&1 | grep "^all2=")
 #echo "$RESULT"
-assert "$RESULT" "all2=hadoop,1,1,,--dump test cmd" $LINENO
+assert "$RESULT" "all2=hadoop,1,1,,./servers.json,--dump test cmd" $LINENO
 
 #
 # Test without a servers.json file
