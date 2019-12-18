@@ -235,6 +235,16 @@ Or lets say you want to do rolling upgrades of your Splunk platform:
 That's literally all there is to it!  And I've literally (not figuratively) done this in production.
 
 
+## Development
+
+I have a rudimentary unit test at `./ssh-to-test` which should be run before any commits are made.
+
+Future list of things for testing:
+- A better script
+- A `Dockerfile`
+- A script to drive building said Docker container and the unit test
+
+
 ## Author
 <a name="author"></a>
 
