@@ -21,8 +21,10 @@ IFS="
 
 function print_syntax() {
 	>&2 echo "! "
-	>&2 echo "! Syntax $0 [ --dump | --loop ] group [ host_number ] [ ssh_cmd ]"
+	>&2 echo "! Syntax: $0 [ --create | --edit | --dump | --loop ] group [ host_number ] [ ssh_cmd ]"
 	>&2 echo "! "
+	>&2 echo "! --create RUN THE FIRST TIME using ssh-to to create your ~/.servers.json file"
+	>&2 echo "! --edit Edit your .servers.json file.  After editing, the JSON syntax will be checked."
 	>&2 echo "! --dump Dump the IP address of the target host. Useful in automation."
 	>&2 echo "! --loop Loop through the target group and execute the same command on each host."
 	>&2 echo "! ssh_cmd Command(s) to be executed over the SSH connect."
